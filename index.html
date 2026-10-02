@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#eaf2ed" />
+  <meta name="description" content="Harper Rail — 대전·수서 출퇴근 열차 설정 도우미" />
+  <title>Harper Rail | 한솔의 기차표</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="topbar"><div class="brand"><span class="brandmark">H</span><span><b>Harper Rail</b><small>한솔의 기차표 도우미</small></span></div><span class="pill">COMMUTE EDITION</span></header>
+    <main>
+      <section class="hero"><div class="eyebrow">SEOUL ↔ DAEJEON · COMMUTER COMPANION</div><h1>가고 싶은 곳으로,<br>한솔의 다음 기차.</h1><p>출퇴근 조건을 저장하고 코레일 공식 예매 페이지로 이동하세요.</p><div class="route-line"><span>대전</span><span>↔</span><span>수서</span></div></section>
+      <div class="tabs" role="tablist" aria-label="서비스 메뉴"><button class="tab active" data-tab="search" role="tab" aria-selected="true">열차 설정</button><button class="tab" data-tab="saved" role="tab" aria-selected="false">저장한 여정 <span id="savedCount">0</span></button><button class="tab" data-tab="connect" role="tab" aria-selected="false">코레일 연결</button></div>
+      <section id="search" class="panel active" role="tabpanel">
+        <div class="status notice"><strong>실시간 자동 조회는 연결되지 않았어요</strong><p>이 사이트는 코레일의 좌석 현황을 읽거나 예약을 대신하지 않습니다. 로그인 및 예매는 반드시 코레일 공식 사이트에서 진행하세요.</p></div>
+        <div class="card"><div class="cardhead"><h2>어느 기차를 탈까요?</h2><span class="seq">01</span></div>
+          <form id="journeyForm">
+            <div class="stationrow"><label>출발역<select id="from" required><option>대전</option><option>수서</option><option>서울</option><option>동대구</option><option>부산</option><option>천안아산</option><option>광명</option></select></label><button id="swap" class="swap" type="button" title="출발·도착 교체" aria-label="출발역과 도착역 교체">⇄</button><label>도착역<select id="to" required><option>수서</option><option>대전</option><option>서울</option><option>동대구</option><option>부산</option><option>천안아산</option><option>광명</option></select></label></div>
+            <div class="twocol"><label>탑승 날짜<input id="date" type="date" required /></label><label>출발 희망 시간<input id="time" type="time" value="07:00" required /></label></div>
+            <div class="twocol"><label>열차번호 (선택)<input id="train" placeholder="예: 304" inputmode="numeric" maxlength="6" /></label><label>좌석 등급<select id="class"><option value="both">일반실 + 특실</option><option value="standard">일반실</option><option value="first">특실</option></select></label></div>
+            <div class="twocol"><label>탑승 인원<select id="count"><option value="1">성인 1명</option><option value="2">성인 2명</option><option value="3">성인 3명</option><option value="4">성인 4명</option></select></label><label>여정 이름 (선택)<input id="alias" maxlength="40" placeholder="예: 월요일 출근" /></label></div>
+            <div class="actions"><button type="submit" class="primary">이 여정 저장하기</button><button type="button" id="openBooking" class="secondary">코레일에서 예매하기 ↗</button></div>
+          </form>
+        </div>
+        <div class="card"><div class="cardhead"><h2>출퇴근 빠른 설정</h2><span class="seq">02</span></div><div class="presets"><button type="button" data-preset="morning">대전 → 수서 · 오전 7시</button><button type="button" data-preset="evening">수서 → 대전 · 오후 7시</button></div><p class="hint">빠른 설정은 열차 좌석을 조회하지 않고 입력값만 변경합니다.</p></div>
+      </section>
+      <section id="saved" class="panel" role="tabpanel" hidden><div class="card"><div class="cardhead"><h2>저장한 출퇴근 여정</h2><span class="seq">MY ROUTES</span></div><p class="hint">저장한 일정은 이 브라우저에만 보관됩니다. 로그인 계정이나 다른 기기로 동기화되지 않습니다.</p><div id="savedList" class="savedlist"><div class="empty">아직 저장한 여정이 없습니다.</div></div></div></section>
+      <section id="connect" class="panel" role="tabpanel" hidden>
+        <div class="card"><div class="cardhead"><h2>코레일 공식 서비스 연결</h2><span class="seq">OFFICIAL</span></div><p class="copy">코레일 로그인은 공식 웹사이트에서 직접 진행합니다. Harper Rail은 회원번호, 비밀번호, 결제정보를 입력받거나 저장하지 않습니다.</p><div class="linkactions"><a class="primary linkbutton" href="https://www.korail.com/ticket/login" target="_blank" rel="noopener noreferrer">코레일 공식 로그인 ↗</a><a class="secondary linkbutton" href="https://www.korail.com/ticket/main" target="_blank" rel="noopener noreferrer">코레일 승차권 예매 ↗</a></div><p class="hint">공식 사이트를 열어도 Harper Rail에 로그인 정보가 자동 전달되거나 연동되지는 않습니다.</p></div>
+        <div class="card"><div class="cardhead"><h2>기능 연결 상태</h2><span class="seq">STATUS</span></div><div class="statline"><span>여정 설정·브라우저 저장</span><strong class="ok">사용 가능</strong></div><div class="statline"><span>코레일 로그인·예매 링크</span><strong class="ok">사용 가능</strong></div><div class="statline"><span>코레일 실제 좌석 조회</span><strong class="pending">미연결</strong></div><div class="statline"><span>10초 간격 자동 조회</span><strong class="pending">미연결</strong></div><div class="statline"><span>취소표 자동예약·결제 연계</span><strong class="pending">미연결</strong></div></div>
+        <div class="card"><div class="cardhead"><h2>매진됐을 때</h2><span class="seq">HELP</span></div><p class="copy">코레일 공식 예약대기 기능은 매진 열차에 취소 좌석이 발생했을 때 신청 순서대로 배정하는 서비스입니다. 열차 출발 2일 전까지 온라인 신청할 수 있습니다. 해당 열차에 예약대기 선택지가 있는지 공식 예매 화면에서 확인하세요.</p><a href="https://www.korail.go.kr/ticket/reserve/guide/faq" target="_blank" rel="noopener noreferrer" class="inline-link">코레일 공식 FAQ 확인 ↗</a><p class="copy small">정기승차권은 코레일톡 앱에서 구매할 수 있다고 안내돼 있어요. 출퇴근 횟수가 많다면 함께 확인해 보세요.</p></div>
+      </section>
+    </main>
+    <footer><b>Harper Rail</b> · 개인용 여정 도우미 · 코레일 공식 서비스가 아닙니다.</footer>
+  </div>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
