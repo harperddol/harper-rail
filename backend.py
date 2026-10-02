@@ -70,10 +70,12 @@ def time_string(val):
 
 def trains_preview(conf):
     from korail_mobile_api import KorailClient, TrainSearchQuery
-    if not KORAIL_ID or not KORAIL_PASSWORD: raise RuntimeError('코레일 계정 환경변수가 설정되지 않았습니다.')
+    # The timetable endpoint is a documented read-only operation and does not
+    # require a Korail account session. Do not perform a login for a preview:
+    # login can trigger the separate DynaPath anti-automation gate.
+    # If the public read itself is refused, report the error and stop.
     client=KorailClient()
     try:
-        client.login(KORAIL_ID,KORAIL_PASSWORD)
         query=TrainSearchQuery(conf['departure'],conf['arrival'],conf['date'].replace('-',''),departure_time=conf['time'].replace(':','')+'00',passengers=1)
         result=client.search_trains(query)
         trains=list(result.trains)
