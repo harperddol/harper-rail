@@ -20,10 +20,16 @@
           <form id="journeyForm">
             <div class="stationrow"><label>출발역<select id="from" required><option>대전</option><option>수서</option><option>서울</option><option>동대구</option><option>부산</option><option>천안아산</option><option>광명</option></select></label><button id="swap" class="swap" type="button" title="출발·도착 교체" aria-label="출발역과 도착역 교체">⇄</button><label>도착역<select id="to" required><option>수서</option><option>대전</option><option>서울</option><option>동대구</option><option>부산</option><option>천안아산</option><option>광명</option></select></label></div>
             <div class="twocol"><label>탑승 날짜<input id="date" type="date" required /></label><label>출발 희망 시간<input id="time" type="time" value="07:00" required /></label></div>
-            <div class="twocol"><label>열차번호 (선택)<input id="train" placeholder="예: 304" inputmode="numeric" maxlength="6" /></label><label>좌석 등급<select id="class"><option value="both">일반실 + 특실</option><option value="standard">일반실</option><option value="first">특실</option></select></label></div>
+            <div class="twocol"><label>희망 열차번호 (아래 검색 결과에서 자동 입력)<input id="train" placeholder="아래에서 열차를 선택하세요" readonly maxlength="6" /></label><label>좌석 등급<select id="class"><option value="both">일반실 + 특실</option><option value="standard">일반실</option><option value="first">특실</option></select></label></div>
             <div class="twocol"><label>탑승 인원<select id="count"><option value="1">성인 1명</option><option value="2">성인 2명</option><option value="3">성인 3명</option><option value="4">성인 4명</option></select></label><label>여정 이름 (선택)<input id="alias" maxlength="40" placeholder="예: 월요일 출근" /></label></div>
             <div class="actions"><button type="submit" class="primary">이 여정 저장하기</button><button type="button" id="openBooking" class="secondary">코레일에서 예매하기 ↗</button></div>
           </form>
+        </div>
+        <div class="card" id="trainResultsCard"><div class="cardhead"><h2>실제 운행 열차 검색 · 예약 희망 선택</h2><span class="seq">LIVE</span></div>
+          <p class="hint">위 출발역·도착역·날짜·시간을 정한 뒤 검색하세요. 실제 코레일 조회 결과가 있을 때만 목록을 표시하며, 예시 열차를 생성하지 않습니다. 로그인 연동이 차단되면 오류를 표시합니다.</p>
+          <div class="actions"><button class="primary" id="searchRealTrains" type="button">선택 시간 이후 열차 검색</button></div>
+          <p id="trainSearchStatus" class="hint" role="status" aria-live="polite">열차 검색 전입니다. 아래 개인 서버 URL과 토큰을 먼저 입력하세요.</p>
+          <div id="trainSearchResults" class="savedlist" aria-live="polite"></div>
         </div>
         <div class="card"><div class="cardhead"><h2>출퇴근 빠른 설정</h2><span class="seq">02</span></div><div class="presets"><button type="button" data-preset="morning">대전 → 수서 · 오전 7시</button><button type="button" data-preset="evening">수서 → 대전 · 오후 7시</button><button type="button" id="nextWeekday">다음 평일로 날짜 이동</button></div><p class="hint">빠른 설정은 입력값만 바꾸며 실제 열차 운행 여부·좌석은 조회하지 않습니다.</p></div>
         <div class="card"><div class="cardhead"><h2>예매 준비 도우미</h2><span class="seq">03</span></div><p class="copy">아래 버튼은 설정한 여정을 클립보드에 복사하거나 코레일 공식 예매 화면을 열어 줍니다. <b>코레일 검색창에 자동 입력되지는 않으며, 좌석을 조회하거나 예약하지 않습니다.</b></p><div class="actions"><button type="button" class="secondary" id="copyJourney">여정 정보 복사</button><button type="button" class="secondary" id="calendarJourney">탑승 일정 캘린더 저장 (.ics)</button></div><p class="hint">캘린더 알림은 탑승일 기준입니다. 취소표 감시나 좌석 확보 알림이 아닙니다.</p></div>
@@ -43,7 +49,7 @@
     <p>코레일과 별도로 배포한 개인 서버를 연결합니다. GitHub Pages만으로는 자동 감시가 실행되지 않습니다. 서버 비밀번호는 이 브라우저 탭에서만 사용합니다.</p>
     <label>내 서버 주소 (Railway URL)<input id="backendUrl" type="url" placeholder="https://your-service.up.railway.app"></label>
     <label>개인 대시보드 토큰<input id="backendToken" type="password" autocomplete="off" placeholder="Railway DASHBOARD_TOKEN 값"></label>
-    <p class="hint">위 열차 설정의 탑승일, 역, 시간, 열차번호, 좌석등급을 사용합니다. **열차번호는 필수**, 인원은 1명만 지원합니다.</p>
+    <p class="hint">위에서 시간을 지정하고 “열차 검색”을 누른 후 원하는 열차 하나를 선택하세요. 선택한 열차번호가 자동 입력됩니다. 인원은 1명만 지원합니다.</p>
     <label class="agreement"><input type="checkbox" id="bookingConsent"> 좌석이 확인되면 제 명의로 실제 열차표 1석 예약을 시도하는 데 동의합니다. 자동 결제는 하지 않습니다.</label>
     <div class="actions"><button id="backendStart" type="button" class="primary">1석 감시 시작</button><button id="backendStop" type="button" class="secondary">감시 중지</button><button id="backendRefresh" type="button" class="secondary">상태 새로고침</button></div>
     <div class="status notice"><b>서버 상태</b><p id="backendStatus" aria-live="polite">서버 주소와 토큰을 입력해 연결하세요. 미연결 상태입니다.</p></div>

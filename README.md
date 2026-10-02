@@ -1,3 +1,7 @@
+# Harper Rail v4 — 시간대 검색 후 예약 희망 열차 선택
+
+실제 코레일 열차 목록 조회 버튼(`/trains`, 읽기 전용)이 추가됐습니다. 출발시간 이후의 실제 조회 결과 중 하나를 선택하면 `train` 필드가 자동 설정됩니다. **실서버에서 로그인/조회 성공은 아직 검증되지 않았습니다.** 기존 Railway 환경변수 및 예약 비활성화 설정을 유지하세요.
+
 # Harper Rail v3 · 1석 출퇴근 감시 베타
 
 기존 GitHub Pages 웹사이트(`index.html`, `style.css`, `app.js`)와 Railway Python 백엔드(`backend.py`)를 함께 포함합니다.
@@ -55,4 +59,3 @@
 - `backend-ui.js`: Railway 백엔드 연결 화면
 - `backend.py`: HTTP API, 단일 감시 스레드, 비공식 코레일 클라이언트
 - `requirements.txt`, `railway.json`, `Procfile`: 서버 배포 설정
-

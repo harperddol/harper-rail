@@ -45,6 +45,60 @@ def normalize_config(payload):
     if not obj['consent']: raise ValueError('실제 좌석 1석 예약에 동의해야 합니다.')
     return obj
 
+def normalize_search(payload):
+    # Read-only timetable search. Does not create a hold or booking.
+    dep=str(payload.get('departure','')).strip()
+    arr=str(payload.get('arrival','')).strip()
+    day=str(payload.get('date','')).strip()
+    start=str(payload.get('time','')).strip()
+    if dep==arr or dep not in ['대전','수서','서울','동대구','부산','천안아산','광명'] or arr not in ['대전','수서','서울','동대구','부산','천안아산','광명']:
+        raise ValueError('출발역과 도착역을 확인해 주세요.')
+    if not re.fullmatch(r'\d{4}-\d{2}-\d{2}',day): raise ValueError('탑승 날짜를 확인해 주세요.')
+    date_obj=datetime.strptime(day,'%Y-%m-%d').date()
+    if date_obj<datetime.now(KST).date() or date_obj>datetime.now(KST).date()+timedelta(days=31):
+        raise ValueError('조회 날짜는 오늘부터 31일 이내여야 합니다.')
+    if not re.fullmatch(r'(?:[01]\d|2[0-3]):[0-5]\d',start): raise ValueError('출발 시간을 확인해 주세요.')
+    return {'departure':dep,'arrival':arr,'date':day,'time':start}
+
+def time_string(val):
+    # Some clients return HHMMSS, some return datetime or HH:MM.
+    raw=str(val or '')
+    if re.fullmatch(r'\d{6}',raw): return raw[:2]+':'+raw[2:4]
+    if re.fullmatch(r'\d{4}',raw): return raw[:2]+':'+raw[2:]
+    if re.fullmatch(r'\d{2}:\d{2}.*',raw): return raw[:5]
+    return raw[:24]
+
+def trains_preview(conf):
+    from korail_mobile_api import KorailClient, TrainSearchQuery
+    if not KORAIL_ID or not KORAIL_PASSWORD: raise RuntimeError('코레일 계정 환경변수가 설정되지 않았습니다.')
+    client=KorailClient()
+    try:
+        client.login(KORAIL_ID,KORAIL_PASSWORD)
+        query=TrainSearchQuery(conf['departure'],conf['arrival'],conf['date'].replace('-',''),departure_time=conf['time'].replace(':','')+'00',passengers=1)
+        result=client.search_trains(query)
+        trains=list(result.trains)
+        # One follow-on page at most, avoiding large repeated requests.
+        cont=result.next_page()
+        if cont is not None and len(trains)<15:
+            extra=client.search_trains(query,continuation=cont)
+            trains+=list(extra.trains)
+        data=[];seen=set()
+        for t in trains[:30]:
+            no=str(getattr(t,'train_no','')).strip()
+            depart=time_string(getattr(t,'departure_time',''))
+            arrive=time_string(getattr(t,'arrival_time',''))
+            if not re.fullmatch(r'\d{1,5}',no): continue
+            if (no,depart) in seen: continue
+            seen.add((no,depart))
+            data.append({'train_no':no,'departure_time':depart,'arrival_time':arrive,
+                         'train_type':str(getattr(t,'train_type_name','') or getattr(t,'train_type','') or '열차')[:45],
+                         'general':str(getattr(t,'general_availability_name','') or '정보 없음')[:45],
+                         'special':str(getattr(t,'special_availability_name','') or '정보 없음')[:45]})
+        return {'ok':True,'trains':data,'source':'unofficial_live_search','note':'비공식 코레일 연동 결과이며 잔여석은 실시간으로 달라질 수 있습니다.'}
+    finally:
+        try:client.close()
+        except Exception: pass
+
 def has_available(train, seat):
     label=str(getattr(train,('special_availability_name' if seat=='first' else 'general_availability_name'), '') or '')
     if any(x in label for x in ['매진','없음','불가','예약대기','입석']): return False
@@ -152,6 +206,14 @@ class Handler(BaseHTTPRequestHandler):
             n=int(self.headers.get('Content-Length','0'))
             if n>4096: return self.send_json({'error':'요청 크기 초과'},413)
             body=json.loads(self.rfile.read(n) or b'{}')
+            if self.path=='/trains':
+                conf=normalize_search(body)
+                try:
+                    result=trains_preview(conf)
+                    return self.send_json(result)
+                except Exception as exc:
+                    # Never leak credentials or upstream response bodies to the browser.
+                    return self.send_json({'error':'코레일 열차 조회 실패 ('+type(exc).__name__+'). 공식 앱과 Railway 서버 로그를 확인하세요.'},502)
             if self.path=='/stop':
                 STOP.set(); return self.send_json({'ok':True,'note':'중지 요청됨'})
             if self.path!='/start': return self.send_json({'error':'경로 없음'},404)
