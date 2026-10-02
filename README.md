@@ -55,3 +55,4 @@
 - `backend-ui.js`: Railway 백엔드 연결 화면
 - `backend.py`: HTTP API, 단일 감시 스레드, 비공식 코레일 클라이언트
 - `requirements.txt`, `railway.json`, `Procfile`: 서버 배포 설정
+
